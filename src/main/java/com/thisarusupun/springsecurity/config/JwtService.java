@@ -7,16 +7,25 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
+import java.util.function.Function;
 
 @Service
 public class JwtService {
 
     private static final String SECRET_KEY = "MMbLsxSaXdivbyHKdr9j+2yr8nhDghfmm8N+pRp/Jc0T4ukg+BkcsppWT1AN0Vwc";
 
-    public String extractUsername(String jwt) {
-        return null;
+    // get username from token
+    public String extractUsername(String token) {
+        return extractClaim(token, Claims::getSubject); // subject is the username or email
     }
 
+    // get single claim
+    public <T> T extractClaim(String token, Function<Claims, T> claimResolver){
+        final Claims claims = extractAllClaims(token);
+        return claimResolver.apply(claims);
+    }
+
+    // get all claim
     private Claims extractAllClaims(String token){
         return Jwts
                 .parserBuilder()
@@ -26,6 +35,7 @@ public class JwtService {
                 .getBody();
     }
 
+    // sign in key
     private Key getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(keyBytes);
